@@ -12,7 +12,7 @@
   "description": "",
   "dependencies": {
     "express": "^5.1.0",
-    "multer": "^2.0.0",
-    "skia-canvas": "^1.0.2"
+    "jimp": "^0.22.12",
+    "multer": "^2.0.0"
   }
 }

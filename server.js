@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
-const { Canvas, loadImage } = require('skia-canvas');
+const Jimp = require('jimp');
 const path = require('path');
 
 const app = express();
@@ -25,28 +25,29 @@ app.post('/generate', upload.none(), async (req, res) => {
   const TEMPLATE_PATH = path.join(__dirname, 'public', 'template.jpeg');
 
   try {
-    const template = await loadImage(TEMPLATE_PATH);
-    const canvas = new Canvas(template.width, template.height);
-    const ctx = canvas.getContext('2d');
-
+    // Load template image
+    const image = await Jimp.read(TEMPLATE_PATH);
+    
+    // Load font
+    const font = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK);
+    
     // Konfigurasi posisi teks
-    const textX = 369;
-    const textY = 60;
-    const textMaxWidth = 250;
-
-    ctx.drawImage(template, 0, 0);
-
-    ctx.font = 'bold 54px Arial';
-    ctx.textAlign = 'center';
-
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = 'white';
-    ctx.strokeText(userText, textX, textY, textMaxWidth);
-
-    ctx.fillStyle = 'black';
-    ctx.fillText(userText, textX, textY, textMaxWidth);
-
-    const buffer = await canvas.toBuffer('jpeg');
+    const textX = 310; // Posisi X lebih ke kanan (sesuaikan sesuai kebutuhan)
+    const textY = 4;  // Posisi Y (sesuaikan sesuai kebutuhan)
+    const textMaxWidth = 300;
+    
+    // Gunakan format print yang lebih sederhana
+    image.print(
+      font,
+      textX,
+      textY,
+      userText
+    );
+    
+    // Convert to buffer
+    const buffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+    
+    // Send response
     res.setHeader('Content-Type', 'image/jpeg');
     res.send(buffer);
   } catch (err) {
