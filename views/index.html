@@ -144,7 +144,7 @@
     <div class="preview">
       <p id="previewText">Hasil bete jing akan muncul setelah klik tombol Generate</p>
       <div id="memeResult" class="hidden meme-container">
-        <img src="https://i.imgur.com/gnRCgVM.jpeg" alt="Template Meme" id="memeImage" />
+        <img src="https://i.imgur.com/gnRCgVM.jpeg" alt="Template Meme" id="memeImage" crossorigin="anonymous" />
         <div id="memeText" class="meme-text"></div>
       </div>
       
@@ -159,7 +159,7 @@
         </div>
       </div>
       
-      <a id="downloadLink" class="hidden" download="meme.jpg">
+      <a id="downloadLink" class="hidden" download="bete-jing.jpg">
         <button class="download-btn">Download bete jing</button>
       </a>
     </div>
@@ -175,30 +175,53 @@
       const memeText = document.getElementById('memeText');
       const downloadLink = document.getElementById('downloadLink');
       const controls = document.getElementById('controls');
+      const memeImage = document.getElementById('memeImage');
       
-      // Tampilkan meme dengan teks
-      memeText.textContent = text;
-      memeResult.classList.remove('hidden');
-      controls.classList.remove('hidden');
-      previewText.textContent = 'Meme berhasil dibuat!';
+      // Pastikan gambar sudah dimuat sebelum melanjutkan
+      if (!memeImage.complete) {
+        memeImage.onload = function() {
+          generateMeme();
+        };
+      } else {
+        generateMeme();
+      }
+      
+      function generateMeme() {
+        // Tampilkan meme dengan teks
+        memeText.textContent = text;
+        memeResult.classList.remove('hidden');
+        controls.classList.remove('hidden');
+        previewText.textContent = 'Meme berhasil dibuat!';
+        
+        // Perbarui canvas
+        updateCanvas();
+      }
       
       // Untuk download, kita perlu membuat canvas
       function updateCanvas() {
-        setTimeout(() => {
+        // Opsi untuk html2canvas
+        const options = {
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          scale: 2 // Tingkatkan resolusi
+        };
+        
+        // Konversi HTML ke canvas menggunakan html2canvas
+        html2canvas(document.getElementById('memeResult'), options).then(function(canvas) {
           try {
-            // Konversi HTML ke canvas menggunakan html2canvas
-            html2canvas(document.getElementById('memeResult')).then(canvas => {
-              const imageURL = canvas.toDataURL('image/jpeg');
-              downloadLink.href = imageURL;
-              downloadLink.classList.remove('hidden');
-            });
+            // Konversi canvas ke gambar
+            const imageURL = canvas.toDataURL('image/jpeg', 1.0);
+            downloadLink.href = imageURL;
+            downloadLink.classList.remove('hidden');
           } catch (error) {
             console.error('Error saat membuat gambar:', error);
-            // Jika gagal, tetap tampilkan meme tanpa fitur download
-            downloadLink.classList.remove('hidden');
-            downloadLink.href = 'https://i.imgur.com/gnRCgVM.jpeg'; // Download template saja
+            alert('Gagal membuat gambar untuk download. Coba gunakan browser lain.');
           }
-        }, 100);
+        }).catch(function(error) {
+          console.error('Error html2canvas:', error);
+          alert('Gagal membuat gambar untuk download. Coba gunakan browser lain.');
+        });
       }
       
       // Tambahkan event listener untuk slider posisi
@@ -213,10 +236,12 @@
         memeText.style.top = value + 'px';
         updateCanvas();
       });
-      
-      // Update canvas pertama kali
-      updateCanvas();
     });
+    
+    // Preload gambar template
+    const preloadImage = new Image();
+    preloadImage.crossOrigin = "anonymous";
+    preloadImage.src = "https://i.imgur.com/gnRCgVM.jpeg";
   </script>
   
   <!-- Tambahkan library html2canvas -->
