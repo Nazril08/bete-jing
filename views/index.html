@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bete jing Generator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
+      margin-top: 20px;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #444;
+    }
+    input[type="text"] {
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #4267B2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #365899;
+    }
+    .preview {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .preview img {
+      max-width: 100%;
+      margin-top: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .download-btn {
+      margin-top: 15px;
+      background-color: #28a745;
+    }
+    .download-btn:hover {
+      background-color: #218838;
+    }
+    .hidden {
+      display: none;
+    }
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      color: #777;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>bete jing Generator</h1>
+    <form id="memeForm">
+      <label for="text">Teks Meme:</label>
+      <input type="text" name="text" id="text" placeholder="Masukkan teks meme..." required />
+      <button type="submit">Generate bete jing</button>
+    </form>
+    <div class="preview">
+      <p id="previewText">Hasil bete jing akan muncul setelah klik tombol Generate</p>
+      <img id="memeResult" class="hidden" alt="Hasil Meme" />
+      <a id="downloadLink" class="hidden" download="meme.jpg">
+        <button class="download-btn">Download bete jing</button>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('memeForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const text = document.getElementById('text').value;
+      const previewText = document.getElementById('previewText');
+      const memeResult = document.getElementById('memeResult');
+      const downloadLink = document.getElementById('downloadLink');
+      
+      previewText.textContent = 'Sedang membuat meme...';
+      
+      try {
+        // Buat FormData untuk mengirim data
+        const formData = new FormData();
+        formData.append('text', text);
+        
+        // Kirim request ke server
+        const response = await fetch('/generate', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Gagal membuat meme');
+        }
+        
+        // Dapatkan blob dari response
+        const blob = await response.blob();
+        
+        // Buat URL untuk blob
+        const imageUrl = URL.createObjectURL(blob);
+        
+        // Tampilkan gambar
+        memeResult.src = imageUrl;
+        memeResult.classList.remove('hidden');
+        
+        // Siapkan tombol download
+        downloadLink.href = imageUrl;
+        downloadLink.classList.remove('hidden');
+        
+        // Update teks preview
+        previewText.textContent = 'Meme berhasil dibuat!';
+        
+      } catch (error) {
+        console.error('Error:', error);
+        previewText.textContent = 'Gagal membuat meme. Silakan coba lagi.';
+      }
+    });
+  </script>
+</body>
+</html>
